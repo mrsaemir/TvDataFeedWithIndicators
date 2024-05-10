@@ -2,7 +2,7 @@ from tvDatafeed import TvDatafeed, Interval
 from talipp.indicators import (   # https://nardew.github.io/talipp/latest/
     EMA, ADX, ATR, AO, BB, CCI, EMV, Ichimoku, KVO, ALMA, DEMA,
     HMA, KAMA, SMA, SMMA, T3, TEMA, VWMA, WMA, ZLEMA, MACD, ParabolicSAR,
-    ROC, RSI, StdDev, Stoch, StochRSI, VTX, VWAP
+    ROC, RSI, StdDev, Stoch, StochRSI, VTX
 )
 from talipp.ohlcv import OHLCVFactory
 import matplotlib.pyplot as plt
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     df = tv.get_hist(
         "BTCUSD",
         exchange="BITSTAMP",
-        interval=Interval.in_monthly,
+        interval=Interval.in_daily,
         n_bars=1_000_000
     )
     ohlcv = OHLCVFactory.from_dict(
@@ -311,7 +311,77 @@ if __name__ == "__main__":
         df=df
     )
 
-    plt.plot(df["ParabolicSAR_value"], label="ParabolicSAR_value")
-    # plt.plot(df["ParabolicSAR_trend"], label="ParabolicSAR_trend")
-    plt.legend()
-    plt.savefig('ema_plot.png')
+    # ROC
+    roc = ROC(period=9, input_values=df["close"])
+    df = add_indicator_to_df(
+        indicator_name="ROC",
+        indicator_data=roc,
+        df=df
+    )
+
+    # RSI
+    rsi = RSI(period=14, input_values=df["close"])
+    df = add_indicator_to_df(
+        indicator_name="RSI",
+        indicator_data=rsi,
+        df=df
+    )
+
+    # StdDev
+    stddev = StdDev(period=20, input_values=df["close"])
+    df = add_indicator_to_df(
+        indicator_name="StdDev",
+        indicator_data=stddev,
+        df=df
+    )
+
+    # Stoch
+    stoch = Stoch(period=14, smoothing_period=1, input_values=ohlcv)
+    df = add_indicator_to_df(
+        indicator_name="Stoch_d",
+        indicator_data=extract_attr(stoch, "d"),
+        df=df
+    )
+    df = add_indicator_to_df(
+        indicator_name="Stoch_k",
+        indicator_data=extract_attr(stoch, "k"),
+        df=df
+    )
+
+    # StochRSI
+    stoch_rsi = StochRSI(
+        rsi_period=14,
+        stoch_period=14,
+        k_smoothing_period=3,
+        d_smoothing_period=3,
+        input_values=df["close"]
+    )
+    df = add_indicator_to_df(
+        indicator_name="StochRSI_k",
+        indicator_data=extract_attr(stoch_rsi, "k"),
+        df=df
+    )
+    df = add_indicator_to_df(
+        indicator_name="StochRSI_d",
+        indicator_data=extract_attr(stoch_rsi, "d"),
+        df=df
+    )
+
+    # VTX
+    vtx = VTX(period=14, input_values=ohlcv)
+    df = add_indicator_to_df(
+        indicator_name="VTX_plus_vtx",
+        indicator_data=extract_attr(vtx, "plus_vtx"),
+        df=df
+    )
+    df = add_indicator_to_df(
+        indicator_name="VTX_minus_vtx",
+        indicator_data=extract_attr(vtx, "minus_vtx"),
+        df=df
+    )
+
+    print(df.head())
+    df.to_csv("BTCUSD_BITSTAMP_ALL_DAILY.csv")
+    # plt.plot(df["EMA"], label="EMA")
+    # plt.legend()
+    # plt.savefig('plt.png')
