@@ -183,14 +183,55 @@ if __name__ == "__main__":
         df=df
     )
 
-    plt.plot(df["ichimoku_base_line"], label="ichimoku_base_line")
-    plt.plot(df["ichimoku_conversion_line"], label="ichimoku_conversion_line")
-    plt.plot(df["ichimoku_lagging_line"], label="ichimoku_lagging_line")
-    plt.plot(df["ichimoku_cloud_leading_fast_line"], label="ichimoku_cloud_leading_fast_line")
-    plt.plot(df["ichimoku_cloud_leading_slow_line"], label="ichimoku_cloud_leading_slow_line")
+    # KVO
+    kvo = KVO(
+        fast_period=34,
+        slow_period=55,
+        input_values=ohlcv
+    )
+    df = add_indicator_to_df(
+        indicator_name="KVO",
+        indicator_data=kvo,
+        df=df
+    )
 
+    # alma
+    alma = ALMA(period=9, offset=0.85, sigma=6, input_values=df["close"])
+    df = add_indicator_to_df(
+        indicator_name="ALMA",
+        indicator_data=alma,
+        df=df
+    )
+
+    # DEMA: Double EMA
+    dema = DEMA(period=9, input_values=df["close"])
+    df = add_indicator_to_df(
+        indicator_name="DEMA",
+        indicator_data=dema,
+        df=df
+    )
+
+    # HMA
+    hma = HMA(period=9, input_values=df["close"])
+    df = add_indicator_to_df(
+        indicator_name="HMA",
+        indicator_data=hma,
+        df=df
+    )
+
+    # KAMA
+    kama = KAMA(
+        period=14,
+        fast_ema_constant_period=2,
+        slow_ema_constant_period=30,
+        input_values=df["close"]
+    )
+    df = add_indicator_to_df(
+        indicator_name="KAMA",
+        indicator_data=kama,
+        df=df
+    )
+
+    plt.plot(df["KAMA"], label="KAMA")
     plt.legend()
     plt.savefig('ema_plot.png')
-
-
-    print(df.head())
