@@ -2,7 +2,7 @@ from tvDatafeed import TvDatafeed, Interval
 from talipp.indicators import (   # https://nardew.github.io/talipp/latest/
     EMA, ADX, ATR, AO, BB, CCI, EMV, Ichimoku, KVO, ALMA, DEMA,
     HMA, KAMA, SMA, SMMA, T3, TEMA, VWMA, WMA, ZLEMA, MACD, ParabolicSAR,
-    ROC, RSI, StdDev, Stoch, StochRSI, VTX, VWAP,
+    ROC, RSI, StdDev, Stoch, StochRSI, VTX, VWAP
 )
 from talipp.ohlcv import OHLCVFactory
 import matplotlib.pyplot as plt
@@ -232,6 +232,86 @@ if __name__ == "__main__":
         df=df
     )
 
-    plt.plot(df["KAMA"], label="KAMA")
+    # SMMA
+    smma = SMMA(period=7, input_values=df["close"])
+    df = add_indicator_to_df(
+        indicator_name="SMMA",
+        indicator_data=smma,
+        df=df
+    )
+
+    # T3
+    t3ma = T3(period=5, factor=0.7, input_values=df["close"])
+    df = add_indicator_to_df(
+        indicator_name="T3MA",
+        indicator_data=t3ma,
+        df=df
+    )
+
+    # TEMA: Triple EMA
+    tema = TEMA(period=9, input_values=df["close"])
+    df = add_indicator_to_df(
+        indicator_name="TEMA",
+        indicator_data=tema,
+        df=df
+    )
+
+    # VWMA
+    vwma = VWMA(period=20, input_values=ohlcv)
+    df = add_indicator_to_df(
+        indicator_name="VWMA",
+        indicator_data=vwma,
+        df=df
+    )
+
+    # WMA
+    wma = WMA(period=9, input_values=df["close"])
+    df = add_indicator_to_df(
+        indicator_name="WMA",
+        indicator_data=wma,
+        df=df
+    )
+
+    # ZLEMA
+    zlema = ZLEMA(period=14, input_values=df["close"])
+    df = add_indicator_to_df(
+        indicator_name="ZLEMA",
+        indicator_data=zlema,
+        df=df
+    )
+
+    # MACD
+    macd = MACD(fast_period=12, slow_period=26, signal_period=9, input_values=df["close"])
+    df = add_indicator_to_df(
+        indicator_name="MACD_macd",
+        indicator_data=extract_attr(macd, "macd"),
+        df=df
+    )
+    df = add_indicator_to_df(
+        indicator_name="MACD_signal",
+        indicator_data=extract_attr(macd, "signal"),
+        df=df
+    )
+    df = add_indicator_to_df(
+        indicator_name="MACD_histogram",
+        indicator_data=extract_attr(macd, "histogram"),
+        df=df
+    )
+
+    # ParabolicSAR
+    parabolic_sar = ParabolicSAR(
+        init_accel_factor=0.02,
+        accel_factor_inc=0.02,
+        max_accel_factor=0.2,
+        input_values=ohlcv
+    )
+    df = add_indicator_to_df(
+        indicator_name="ParabolicSAR_value",
+        indicator_data=extract_attr(parabolic_sar, "value"),
+        df=df
+    )
+
+    plt.plot(df["ParabolicSAR_value"], label="ParabolicSAR_value")
+    # plt.plot(df["ParabolicSAR_trend"], label="ParabolicSAR_trend")
     plt.legend()
     plt.savefig('ema_plot.png')
